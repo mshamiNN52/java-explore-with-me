@@ -21,6 +21,7 @@ public class StatsClient extends BaseClient {
 
     private static final String STAT_SERVER_URL = System.getenv().get("STATS_SERVER_URL");
     private final RestTemplate restTemplate = new RestTemplate();
+
     @Autowired
     public StatsClient(@Value("${stats-service.url}") String serverUrl, RestTemplateBuilder builder) {
         super(builder.uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
