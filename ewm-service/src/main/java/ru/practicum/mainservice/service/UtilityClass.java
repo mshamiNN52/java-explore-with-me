@@ -3,14 +3,14 @@ package ru.practicum.mainservice.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.StatsClient;
-import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.mainservice.dto.event.ConfirmedEventDto;
 import ru.practicum.mainservice.dto.event.EventShortDto;
 import ru.practicum.mainservice.mapper.EventMapper;
 import ru.practicum.mainservice.model.Event;
 import ru.practicum.mainservice.model.enums.RequestStatus;
 import ru.practicum.mainservice.repository.RequestRepository;
+import ru.practicum.statclient.StatClient;
+import ru.practicum.statdto.ViewStatsDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Service
 public class UtilityClass {
     private final RequestRepository requestRepository;
-    private final StatsClient statClient = new StatsClient();
+    private final StatClient statClient = new StatClient();
 
     private static final String START = "1970-01-01 00:00:00";
 

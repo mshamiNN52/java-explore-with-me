@@ -7,9 +7,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.StatsClient;
-import ru.practicum.dto.EndpointHitDto;
-import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.mainservice.dto.event.EventDto;
 import ru.practicum.mainservice.dto.event.EventShortDto;
 import ru.practicum.mainservice.dto.event.EventUpdateRequestDto;
@@ -23,7 +20,9 @@ import ru.practicum.mainservice.model.enums.RequestStatus;
 import ru.practicum.mainservice.model.enums.StateAction;
 import ru.practicum.mainservice.repository.*;
 import ru.practicum.mainservice.service.interfaces.EventService;
-
+import ru.practicum.statclient.StatClient;
+import ru.practicum.statdto.EndpointHitDto;
+import ru.practicum.statdto.ViewStatsDto;
 
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Expression;
@@ -45,7 +44,7 @@ public class EventServiceImpl implements EventService {
     private final RequestRepository requestRepository;
     private final LocationRepository locationRepository;
     private final UtilityClass utilityClass;
-    private final StatsClient statClient = new StatsClient();
+    private final StatClient statClient = new StatClient();
 
     private static final String START = "1970-01-01 00:00:00";
     private static final String APP = "ewm-main-service";
@@ -304,7 +303,7 @@ public class EventServiceImpl implements EventService {
 
     private Long getViewsForOneEvent(Long eventId) {
         List<String> urisToSend = List.of(String.format("/events/%s", eventId));
-        List<ViewStatsDto> viewStats = (List<ViewStatsDto>) statClient.getStats(
+        List<ViewStatsDto> viewStats = statClient.getStats(
                 START,
                 formatTimeToString(LocalDateTime.now()),
                 urisToSend,
