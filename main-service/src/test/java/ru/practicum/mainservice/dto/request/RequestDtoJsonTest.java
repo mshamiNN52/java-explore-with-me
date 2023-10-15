@@ -1,4 +1,4 @@
-package ru.practicum.mainservice.dto.request;
+package java.ru.practicum.mainservice.dto.request;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
+import ru.practicum.mainservice.dto.request.RequestDto;
 
 import java.time.LocalDateTime;
 
