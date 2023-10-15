@@ -3,7 +3,6 @@ package ru.practicum.mainservice.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.BaseClient;
 import ru.practicum.StatsClient;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.mainservice.dto.event.ConfirmedEventDto;
