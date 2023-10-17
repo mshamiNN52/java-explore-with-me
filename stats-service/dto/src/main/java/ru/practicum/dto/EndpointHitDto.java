@@ -21,7 +21,7 @@ public class EndpointHitDto {
     private String timestamp;
 
     public EndpointHitDto(String app, String uri, String ip, String formatTimeToString) {
-        this.app =app;
+        this.app = app;
         this.uri = uri;
         this.ip = ip;
         this.timestamp = formatTimeToString;
