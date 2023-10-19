@@ -96,27 +96,28 @@ public class EventServiceImpl implements EventService {
         if (action != null) {
             if (event.getState() != EventState.PENDING) {
                 throw new DataException("Неверный статус события");
-            } if (
+            } else if (
                     event.getEventDate().isBefore(time)
                             && action == StateAction.PUBLISH_EVENT
             ) {
                 throw new DataException("Уже поздно публиковать событие");
+            } else {
+                switch (action) {
+                    case PUBLISH_EVENT:
+                        newState = EventState.PUBLISHED;
+                        event.setPublishedOn(LocalDateTime.now());
+                        break;
+                    case REJECT_EVENT:
+                        newState = EventState.CANCELED;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Неверный статус");
+                }
+                event.setState(newState);
             }
-            switch (action) {
-                case PUBLISH_EVENT:
-                    newState = EventState.PUBLISHED;
-                    event.setPublishedOn(LocalDateTime.now());
-                    break;
-                case REJECT_EVENT:
-                    newState = EventState.CANCELED;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Неверный статус");
-            }
-            event.setState(newState);
+            event = EventMapper.INSTANCE.forUpdate(updater, newCategory, newState, event);
+            return EventMapper.INSTANCE.toDto(event, 0L, 0L);
         }
-        event = EventMapper.INSTANCE.forUpdate(updater, newCategory, newState, event);
-        return EventMapper.INSTANCE.toDto(event, 0L, 0L);
     }
 
     @Transactional

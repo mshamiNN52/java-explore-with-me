@@ -36,7 +36,7 @@ public class NewEventDto {
     @NotNull(message = "Локация не может отсутствовать")
     private final  LocationDto location;
 
-    private final static Boolean paid = false;
+    private static final  Boolean paid = false;
     private final Integer participantLimit = 0;
     private final Boolean requestModeration = true;
 

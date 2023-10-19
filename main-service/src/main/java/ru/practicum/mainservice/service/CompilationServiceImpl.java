@@ -94,7 +94,7 @@ public class CompilationServiceImpl implements CompilationService {
             return new ArrayList<>();
         }
         Set<Event> events = compilations.stream()
-                .flatMap( compilation -> compilation.getEvents().stream())
+                .flatMap(compilation -> compilation.getEvents().stream())
                 .collect(Collectors.toSet());
         List<EventShortDto> eventsDtoList = serviceUtility.makeEventShortDto(events);
 
