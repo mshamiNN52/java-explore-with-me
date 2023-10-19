@@ -1,7 +1,6 @@
 package ru.practicum.mainservice.dto.category;
 
 import lombok.*;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import javax.validation.constraints.Size;
 
