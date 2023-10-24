@@ -96,7 +96,7 @@ public class EventServiceImpl implements EventService {
                         () -> new EntityNotFoundException(CATEGORY_NOT_FOUND)
                 );
             }
-        EventState newState = event.getState();
+        EventState newState;
         StateAction action = updater.getStateAction();
         if (action != null && event.getState() != EventState.PENDING) {
                 throw new DataException("Неверный статус события");
