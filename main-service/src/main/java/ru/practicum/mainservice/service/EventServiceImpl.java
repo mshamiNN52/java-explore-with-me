@@ -106,7 +106,7 @@ public class EventServiceImpl implements EventService {
             ) {
                 throw new DataException("Уже поздно публиковать событие");
             } else {
-            switch (Objects.requireNonNull(action)) {
+            switch (action) {
                 case PUBLISH_EVENT:
                     newState = EventState.PUBLISHED;
                     event.setPublishedOn(LocalDateTime.now());
