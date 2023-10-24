@@ -110,7 +110,8 @@ public class RequestServiceImpl implements RequestService {
             EventRequestStatusUpdateRequestDto updater,
             Long eventId,
             Long userId
-    ) { Event event = eventRepository.findById(eventId).orElseThrow(
+    ) {
+        Event event = eventRepository.findById(eventId).orElseThrow(
             () -> new EntityNotFoundException(EVENT_NOT_FOUND));
         Integer participantLimit = event.getParticipantLimit();
         Long numberOfParticipants = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
