@@ -90,13 +90,11 @@ public class EventServiceImpl implements EventService {
         Long newCategoryId = updater.getCategory();
         Category oldCategory = event.getCategory();
         Category newCategory = oldCategory;
-        if (newCategoryId != null) {
-            if (oldCategory == null || !oldCategory.getId().equals(newCategoryId)) {
+        if (newCategoryId != null && (oldCategory == null || !oldCategory.getId().equals(newCategoryId))) {
                 newCategory = categoryRepository.findById(newCategoryId).orElseThrow(
                         () -> new EntityNotFoundException(CATEGORY_NOT_FOUND)
                 );
             }
-        }
 
         EventState newState = event.getState();
         StateAction action = updater.getStateAction();
