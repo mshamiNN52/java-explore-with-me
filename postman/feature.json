@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "6e3ff555-ef95-43bc-bc93-b0219ed20380",
-		"name": "Check comments Laserdi",
+		"name": "Check comments shamin",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -197,8 +197,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Ответ должен содержать код статуса 204\", function () {\r",
-							"    pm.response.to.have.status(204);\r",
+							"pm.test(\"Ответ должен содержать код статуса 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
 							"});"
 						],
 						"type": "text/javascript"
