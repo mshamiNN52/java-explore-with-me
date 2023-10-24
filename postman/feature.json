@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "beacfff6-8573-4624-ad8b-b101e29a22d0",
+		"_postman_id": "6e3ff555-ef95-43bc-bc93-b0219ed20380",
 		"name": "Check comments Laserdi",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "25920278"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -233,7 +232,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"eventId\":{{eventId}},\r\n    \"text\": \"Comment - {{$randomInt}}\"\r\n}",
+					"raw": "{\r\n    \"eventId\":{{eventId}},\r\n    \"text\": \"Comment - {{$randomInt}}\"\r\n}\n    \"userId\": \"userId - {{$randomInt}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -255,197 +254,6 @@
 					"variable": [
 						{
 							"key": "userId}",
-							"value": "{{userId}}"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Создание комментария с пустым текстом",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"let serverResponse = pm.response; // получаем объект Response и сохраняем его в переменную serverResponse\r",
-							"pm.test(\"Ответ должен содержать код статуса 400 и данные в формате json\", function () {\r",
-							"    pm.response.to.have.status(400);  \r",
-							"    pm.response.to.be.withBody;\r",
-							"    pm.response.to.be.json;\r",
-							"});\r",
-							"\r",
-							"const target = pm.response.json();\r",
-							"\r",
-							"pm.test(\"Ошибка должна содержать поля: status\", function () {\r",
-							"    pm.expect(target).to.have.property('status');\r",
-							"});\r",
-							"\r",
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"eventId\":{{eventId}},\r\n    \"text\": \"   \"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/comments/user/:userId",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"comments",
-						"user",
-						":userId"
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "{{userId}}"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Обновление ранее опубликованного комментария",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"let serverResponse = pm.response; // получаем объект Response и сохраняем его в переменную serverResponse\r",
-							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
-							"    pm.response.to.have.status(200);  \r",
-							"    pm.response.to.be.withBody;\r",
-							"    pm.response.to.be.json;\r",
-							"});\r",
-							"\r",
-							"const source = JSON.parse(pm.request.body.raw);\r",
-							"const target = pm.response.json();\r",
-							"\r",
-							"pm.test(\"Комментарий должен содержать поля: id, text, created, eventId, userId\", function (){\r",
-							"    pm.expect(target).to.have.property('id');\r",
-							"    pm.expect(target).to.have.property('text');\r",
-							"    pm.expect(target).to.have.property('created');\r",
-							"    pm.expect(target).to.have.property(\"eventId\");\r",
-							"    pm.expect(target).to.have.property('userId');\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
-							"    pm.expect(target.id).to.not.be.null;\r",
-							"    pm.expect(target.text).equal(source.text, 'Обновленный комментарий должен соответствовать');\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "PATCH",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"text\": \"Текст для обновления ранее опубликованного комментария.\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/comments/:comId/user/:userId",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"comments",
-						":comId",
-						"user",
-						":userId"
-					],
-					"variable": [
-						{
-							"key": "comId",
-							"value": "{{comId}}"
-						},
-						{
-							"key": "userId",
-							"value": "{{userId}}"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Обновление коммментария пробелами",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"let serverResponse = pm.response; // получаем объект Response и сохраняем его в переменную serverResponse\r",
-							"pm.test(\"Ответ должен содержать код статуса 400 и данные в формате json\", function () {\r",
-							"    pm.response.to.have.status(400);  \r",
-							"    pm.response.to.be.withBody;\r",
-							"    pm.response.to.be.json;\r",
-							"});\r",
-							"\r",
-							"const target = pm.response.json();\r",
-							"\r",
-							"pm.test(\"Ошибка должна содержать поля: status\", function () {\r",
-							"    pm.expect(target).to.have.property('status');\r",
-							"});\r",
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "PATCH",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"text\": \"   \",\r\n    \"eventId\": {{eventId}}\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/comments/:comId/user/:userId",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"comments",
-						":comId",
-						"user",
-						":userId"
-					],
-					"variable": [
-						{
-							"key": "comId",
-							"value": "{{comId}}"
-						},
-						{
-							"key": "userId",
 							"value": "{{userId}}"
 						}
 					]
