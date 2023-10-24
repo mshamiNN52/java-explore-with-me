@@ -90,25 +90,22 @@ public class EventServiceImpl implements EventService {
         Long newCategoryId = updater.getCategory();
         Category oldCategory = event.getCategory();
         Category newCategory = oldCategory;
-        if (newCategoryId != null) {
-            if (oldCategory == null || !oldCategory.getId().equals(newCategoryId)) {
+        if (newCategoryId != null
+                && (oldCategory == null || !oldCategory.getId().equals(newCategoryId))) {
                 newCategory = categoryRepository.findById(newCategoryId).orElseThrow(
                         () -> new EntityNotFoundException(CATEGORY_NOT_FOUND)
                 );
             }
-        }
-
         EventState newState = event.getState();
         StateAction action = updater.getStateAction();
-        if (action != null) {
-            if (event.getState() != EventState.PENDING) {
+        if (action != null && event.getState() != EventState.PENDING) {
                 throw new DataException("Неверный статус события");
             } else if (
                     event.getEventDate().isBefore(time)
                             && action == StateAction.PUBLISH_EVENT
             ) {
                 throw new DataException("Уже поздно публиковать событие");
-            }
+            } else {
             switch (action) {
                 case PUBLISH_EVENT:
                     newState = EventState.PUBLISHED;
@@ -348,36 +345,46 @@ public class EventServiceImpl implements EventService {
     }
 
     private static Specification<Event> inUserIds(List<Long> users) {
-        return users == null
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("initiator").get("id")).value(users);
+        if (users == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("initiator").get("id")).value(users);
+        }
     }
 
     private static Specification<Event> inCategoryIds(List<Long> categories) {
-        return categories == null
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("category").get("id")).value(categories);
+        if (categories == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("category").get("id")).value(categories);
+        }
     }
 
     private static Specification<Event> inStates(List<EventState> states) {
-        return states == null
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("state")).value(states);
+        if (states == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("state")).value(states);
+        }
     }
 
     private static Specification<Event> inEventDates(LocalDateTime rangeStart, LocalDateTime rangeEnd) {
-        return (rangeStart == null || rangeEnd == null)
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("eventDate"), rangeStart, rangeEnd);
+        if (rangeStart == null || rangeEnd == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("eventDate"), rangeStart, rangeEnd);
+        }
     }
 
     private static Specification<Event> byPaid(Boolean paid) {
-        return paid == null
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("paid"), paid);
+        if (paid == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("paid"), paid);
+        }
     }
 
-    private Specification<Event> byTextInAnnotationOrDescription(String text) {
+    private static Specification<Event> byTextInAnnotationOrDescription(String text) {
         return text == null
                 ? null
                 : (root, query, criteriaBuilder) -> {
