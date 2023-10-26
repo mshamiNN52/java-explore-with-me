@@ -23,10 +23,9 @@ public class Compilation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Getter
     @NotNull
     @Column(name = "pinned")
-    private boolean pinned;
+    private Boolean pinned;
 
     @NotBlank
     @Column(name = "title")

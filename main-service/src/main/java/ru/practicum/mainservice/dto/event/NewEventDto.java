@@ -36,9 +36,9 @@ public class NewEventDto {
     @NotNull(message = "Локация не может отсутствовать")
     private final LocationDto location;
 
-    private  final Boolean paid = false;
+    private final Boolean paid = false;
     private final Integer participantLimit = 0;
-    private  final Boolean requestModeration = true;
+    private final Boolean requestModeration = true;
 
     @Length(message = "Размер названия от 3 до 120 символов", min = 3, max = 120)
     @NotBlank(message = "Название не может быть пустым или отсутствовать")

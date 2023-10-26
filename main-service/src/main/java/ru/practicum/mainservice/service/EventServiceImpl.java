@@ -7,11 +7,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.mainservice.dto.comment.CommentResponseDto;
 import ru.practicum.mainservice.dto.event.EventDto;
 import ru.practicum.mainservice.dto.event.EventShortDto;
 import ru.practicum.mainservice.dto.event.EventUpdateRequestDto;
 import ru.practicum.mainservice.dto.event.NewEventDto;
 import ru.practicum.mainservice.exception.DataException;
+import ru.practicum.mainservice.mapper.CommentMapper;
 import ru.practicum.mainservice.mapper.EventMapper;
 import ru.practicum.mainservice.mapper.LocationMapper;
 import ru.practicum.mainservice.model.*;
@@ -43,6 +45,8 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
     private final LocationRepository locationRepository;
+
+    private final CommentRepository commentRepository;
     private final UtilityClass utilityClass;
     private final StatClient statClient = new StatClient();
 
@@ -70,7 +74,8 @@ public class EventServiceImpl implements EventService {
         event.setState(EventState.PENDING);
         event.setCreatedOn(LocalDateTime.now());
         event.setLocation(location);
-        return EventMapper.INSTANCE.toDto(eventRepository.save(event), 0L, 0L);
+        List<CommentResponseDto> comments = new ArrayList<>();
+        return EventMapper.INSTANCE.toDto(eventRepository.save(event), 0L, 0L, comments);
     }
 
     @Transactional
@@ -86,35 +91,38 @@ public class EventServiceImpl implements EventService {
         Category oldCategory = event.getCategory();
         Category newCategory = oldCategory;
         if (newCategoryId != null && (oldCategory == null || !oldCategory.getId().equals(newCategoryId))) {
-            newCategory = categoryRepository.findById(newCategoryId)
-                .orElseThrow(() -> new EntityNotFoundException(CATEGORY_NOT_FOUND));
-        }
+                newCategory = categoryRepository.findById(newCategoryId).orElseThrow(
+                        () -> new EntityNotFoundException(CATEGORY_NOT_FOUND)
+                );
+            }
 
         EventState newState = event.getState();
         StateAction action = updater.getStateAction();
         if (action != null) {
             if (event.getState() != EventState.PENDING) {
                 throw new DataException("Неверный статус события");
-            } else if (event.getEventDate().isBefore(time) && action == StateAction.PUBLISH_EVENT) {
+            } else if (
+                    event.getEventDate().isBefore(time)
+                            && action == StateAction.PUBLISH_EVENT
+            ) {
                 throw new DataException("Уже поздно публиковать событие");
-            } else {
-                switch (action) {
-                    case PUBLISH_EVENT:
-                        newState = EventState.PUBLISHED;
-                        event.setPublishedOn(LocalDateTime.now());
-                        break;
-                    case REJECT_EVENT:
-                        newState = EventState.CANCELED;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Неверный статус");
-                }
-                event.setState(newState);
             }
-
+            switch (action) {
+                case PUBLISH_EVENT:
+                    newState = EventState.PUBLISHED;
+                    event.setPublishedOn(LocalDateTime.now());
+                    break;
+                case REJECT_EVENT:
+                    newState = EventState.CANCELED;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Неверный статус");
+            }
+            event.setState(newState);
         }
         event = EventMapper.INSTANCE.forUpdate(updater, newCategory, newState, event);
-        return EventMapper.INSTANCE.toDto(event, 0L, 0L);
+        List<CommentResponseDto> comments = CommentMapper.INSTANCE.toDtos(commentRepository.findAllByEventIdOrderByCreatedOnDesc(eventId));
+        return EventMapper.INSTANCE.toDto(event, 0L, 0L, comments);
     }
 
     @Transactional
@@ -160,7 +168,8 @@ public class EventServiceImpl implements EventService {
             }
         }
         event = EventMapper.INSTANCE.forUpdate(updateEventDto, newCategory, newState, event);
-        return EventMapper.INSTANCE.toDto(event, 0L, 0L);
+        List<CommentResponseDto> comments = CommentMapper.INSTANCE.toDtos(commentRepository.findAllByEventIdOrderByCreatedOnDesc(eventId));
+        return EventMapper.INSTANCE.toDto(event, 0L, 0L, comments);
     }
 
     @Transactional(readOnly = true)
@@ -177,7 +186,8 @@ public class EventServiceImpl implements EventService {
         }
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED);
         Long views = getViewsForOneEvent(eventId);
-        return EventMapper.INSTANCE.toDto(event, confirmedRequests, views);
+        List<CommentResponseDto> comments = CommentMapper.INSTANCE.toDtos(commentRepository.findAllByEventIdOrderByCreatedOnDesc(eventId));
+        return EventMapper.INSTANCE.toDto(event, confirmedRequests, views, comments);
     }
 
     @Transactional(readOnly = true)
@@ -196,7 +206,8 @@ public class EventServiceImpl implements EventService {
                 formatTimeToString(LocalDateTime.now())
         ));
         Long views = getViewsForOneEvent(eventId);
-        return EventMapper.INSTANCE.toDto(event, confirmedRequests, views);
+        List<CommentResponseDto> comments = CommentMapper.INSTANCE.toDtos(commentRepository.findAllByEventIdOrderByCreatedOnDesc(eventId));
+        return EventMapper.INSTANCE.toDto(event, confirmedRequests, views, comments);
     }
 
     @Transactional(readOnly = true)
@@ -325,8 +336,9 @@ public class EventServiceImpl implements EventService {
             if (views == null) {
                 views = 0L;
             }
+            List<CommentResponseDto> comments = CommentMapper.INSTANCE.toDtos(commentRepository.findAllByEventIdOrderByCreatedOnDesc(eventId));
             eventsDto.add(
-                    EventMapper.INSTANCE.toDto(event, reqCount, views)
+                    EventMapper.INSTANCE.toDto(event, reqCount, views, comments)
             );
         }
 
@@ -334,37 +346,49 @@ public class EventServiceImpl implements EventService {
     }
 
     private static Specification<Event> inUserIds(List<Long> users) {
-        return users == null
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("initiator").get("id")).value(users);
+        if (users == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("initiator").get("id")).value(users);
+        }
     }
 
     private static Specification<Event> inCategoryIds(List<Long> categories) {
-        return categories == null
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("category").get("id")).value(categories);
+        if (categories == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("category").get("id")).value(categories);
+        }
     }
 
     private static Specification<Event> inStates(List<EventState> states) {
-        return states == null
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("state")).value(states);
+        if (states == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.in(root.get("state")).value(states);
+        }
     }
 
     private static Specification<Event> inEventDates(LocalDateTime rangeStart, LocalDateTime rangeEnd) {
-        return (rangeStart == null || rangeEnd == null)
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("eventDate"), rangeStart, rangeEnd);
+        if (rangeStart == null || rangeEnd == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("eventDate"), rangeStart, rangeEnd);
+        }
     }
 
     private static Specification<Event> byPaid(Boolean paid) {
-        return paid == null
-                ? null
-                : (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("paid"), paid);
+        if (paid == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("paid"), paid);
+        }
     }
 
-    private Specification<Event> byTextInAnnotationOrDescription(String text) {
-        return text == null ? null : (root, query, criteriaBuilder) -> {
+    private static Specification<Event> byTextInAnnotationOrDescription(String text) {
+        return text == null
+                ? null
+                : (root, query, criteriaBuilder) -> {
             String lowerCasedText = text.toLowerCase();
             Expression<String> annotation = criteriaBuilder.lower(root.get("annotation"));
             Expression<String> description = criteriaBuilder.lower(root.get("description"));

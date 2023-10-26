@@ -67,7 +67,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         List<EventShortDto> eventsDto = serviceUtility.makeEventShortDto(compilation.getEvents());
 
-        compilationRepository.save(compilation);
+        compilationRepository.save(compilation).getEvents();
 
         return CompilationMapper.INSTANCE.toDto(compilation, eventsDto);
     }
